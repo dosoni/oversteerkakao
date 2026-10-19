@@ -13,10 +13,10 @@
       user-select: none;
     }
 
-    html, body {
-      width: 100%;
-      height: 100%;
-      background-color: #f0f2f5;
+    body {
+      width: 100vw;
+      height: 100vh;
+      background-color: #E9ECEF;
       font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
       display: flex;
       justify-content: center;
@@ -24,10 +24,9 @@
       overflow: hidden;
     }
 
-    /* 폰 프레임: PC/모바일 반응형 */
     .phone-container {
       width: 100%;
-      max-width: 430px;
+      max-width: 412px;
       height: 100%;
       background: #FFFFFF;
       position: relative;
@@ -38,15 +37,15 @@
 
     @media (min-width: 500px) {
       .phone-container {
-        height: 90vh;
-        max-height: 850px;
+        height: 820px;
+        max-height: 90vh;
         border-radius: 36px;
-        border: 8px solid #222;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+        border: 8px solid #2B2D2F;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
       }
     }
 
-    /* 1. 카카오톡 스플래시 화면 */
+    /* 1. 카카오톡 스플래시 로딩 화면 */
     .splash-screen {
       position: absolute;
       top: 0;
@@ -58,7 +57,7 @@
       justify-content: center;
       align-items: center;
       z-index: 999;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
     }
 
     .splash-screen.fade-out {
@@ -117,18 +116,17 @@
       background: #ABC1D1;
     }
 
-    /* 3. 화면 뷰 (채팅목록 & 대화방) */
+    /* 3. 뷰 컨테이너 */
     .view {
-      flex: 1;
+      position: absolute;
+      top: 32px;
+      left: 0;
       width: 100%;
       height: calc(100% - 32px);
       display: flex;
       flex-direction: column;
-      position: absolute;
-      top: 32px;
-      left: 0;
       background: #FFFFFF;
-      transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     /* 채팅 목록 화면 */
@@ -168,8 +166,8 @@
       cursor: pointer;
     }
 
-    .chat-item.clickable:active {
-      background-color: #f2f2f2;
+    .chat-item.clickable:hover {
+      background-color: #f7f7f7;
     }
 
     .avatar {
@@ -246,11 +244,11 @@
     }
 
     .back-btn {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 400;
       color: #222;
-      cursor: default;
-      pointer-events: none;
+      cursor: pointer;
+      padding: 4px 8px 4px 0;
     }
 
     .chat-title {
@@ -295,14 +293,14 @@
       transform: translateY(0);
     }
 
-    /* 메시지 열 */
+    /* 메시지 행 */
     .msg-row {
       display: flex;
       align-items: flex-start;
       gap: 8px;
     }
 
-    /* 동적 메시지 (처음엔 숨김) */
+    /* 동적 등장 메시지 */
     .msg-row.dynamic {
       display: none;
       opacity: 0;
@@ -402,7 +400,7 @@
       white-space: nowrap;
     }
 
-    /* 하단 가짜 입력바 */
+    /* 하단 입력바 */
     .chat-input-bar {
       height: 48px;
       background: #FAFAFA;
@@ -436,14 +434,14 @@
 <body>
 
   <div class="phone-container" id="phoneContainer">
-    <!-- 스플래시 로딩 화면 -->
+    <!-- 스플래시 화면 -->
     <div class="splash-screen" id="splash">
       <div class="kakao-logo">
         <span>TALK</span>
       </div>
     </div>
 
-    <!-- 상단 상태바 -->
+    <!-- 상태바 -->
     <div class="status-bar">
       <span>19:04</span>
       <span>LTE 98%</span>
@@ -455,7 +453,6 @@
         <h1>채팅</h1>
       </div>
       <ul class="chat-items">
-        <!-- 도훈이 형 (클릭 가능) -->
         <li class="chat-item clickable" id="targetChat">
           <div class="avatar">
             <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형">
@@ -463,13 +460,12 @@
           <div class="item-content">
             <div class="item-top">
               <span class="item-name">도훈이 형</span>
-              <span class="item-time">어제</span>
+              <span class="item-time" id="dohoonTime">어제</span>
             </div>
-            <div class="item-preview">네 쉬세요</div>
+            <div class="item-preview" id="dohoonPreview">네 쉬세요</div>
           </div>
         </li>
 
-        <!-- 누나 -->
         <li class="chat-item">
           <div class="avatar">누</div>
           <div class="item-content">
@@ -481,7 +477,6 @@
           </div>
         </li>
 
-        <!-- 엄마 -->
         <li class="chat-item">
           <div class="avatar">엄</div>
           <div class="item-content">
@@ -493,7 +488,6 @@
           </div>
         </li>
 
-        <!-- 카카오톡 이모티콘 -->
         <li class="chat-item">
           <div class="avatar" style="background:#FFE600; color:#3C1E1E;">em</div>
           <div class="item-content">
@@ -505,7 +499,6 @@
           </div>
         </li>
 
-        <!-- 롯데택배 -->
         <li class="chat-item">
           <div class="avatar" style="background:#ED1C24; color:#fff;">택배</div>
           <div class="item-content">
@@ -517,7 +510,6 @@
           </div>
         </li>
 
-        <!-- 29CM -->
         <li class="chat-item">
           <div class="avatar" style="background:#000; color:#fff;">29</div>
           <div class="item-content">
@@ -534,15 +526,25 @@
     <!-- 2. 채팅방 뷰 -->
     <div class="view" id="chatView">
       <div class="chat-header">
-        <span class="back-btn">&#10094;</span>
+        <span class="back-btn" id="backBtn">&#10094;</span>
         <span class="chat-title">도훈이 형</span>
       </div>
 
       <div class="chat-messages" id="chatMessages">
-        <!-- 어제 날짜 구분선 -->
-        <div class="date-divider">2026년 10월 18일 일요일</div>
+        <!-- 이전 날짜 구분선 -->
+        <div class="date-divider">20XX년 XX월 XX일</div>
 
-        <!-- 어제 메시지 1: 도훈이형 -->
+        <!-- 1. 형 어디에요? (오전 6:28) -->
+        <div class="msg-row outgoing">
+          <div class="bubble-row">
+            <div class="msg-bubble">형 어디에요?</div>
+            <div class="msg-meta">
+              <span class="time">오전 6:28</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 잠만... 지금 일어남 (오전 7:21) -->
         <div class="msg-row incoming">
           <div class="chat-avatar">
             <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형">
@@ -550,28 +552,106 @@
           <div class="msg-content-wrapper">
             <span class="sender-name">도훈이 형</span>
             <div class="bubble-row">
-              <div class="msg-bubble">ㅇㅇ 내일 또 봐</div>
+              <div class="msg-bubble">잠만... 지금 일어남</div>
               <div class="msg-meta">
-                <span class="time">오후 11:42</span>
+                <span class="time">오전 7:21</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 어제 메시지 2: 사용자 -->
+        <!-- 3. 너 보고서 안 들고 감 ㅋㅋ (오후 1:29) -->
+        <div class="msg-row incoming">
+          <div class="chat-avatar">
+            <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형">
+          </div>
+          <div class="msg-content-wrapper">
+            <span class="sender-name">도훈이 형</span>
+            <div class="bubble-row">
+              <div class="msg-bubble">너 보고서 안 들고 감 ㅋㅋ</div>
+              <div class="msg-meta">
+                <span class="time">오후 1:29</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. 형이 좀 챙겨주세요... (오후 1:30) -->
+        <div class="msg-row outgoing">
+          <div class="bubble-row">
+            <div class="msg-bubble">형이 좀 챙겨주세요...</div>
+            <div class="msg-meta">
+              <span class="time">오후 1:30</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. 형 들어갔죠? (오후 3:27) -->
+        <div class="msg-row outgoing">
+          <div class="bubble-row">
+            <div class="msg-bubble">형 들어갔죠?</div>
+            <div class="msg-meta">
+              <span class="time">오후 3:27</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. ㅇㅇ 빨리 와 (오후 3:28) -->
+        <div class="msg-row incoming">
+          <div class="chat-avatar">
+            <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형">
+          </div>
+          <div class="msg-content-wrapper">
+            <span class="sender-name">도훈이 형</span>
+            <div class="bubble-row">
+              <div class="msg-bubble">ㅇㅇ 빨리 와</div>
+              <div class="msg-meta">
+                <span class="time">오후 3:28</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. 수고했어요 (오후 11:28) -->
+        <div class="msg-row outgoing">
+          <div class="bubble-row">
+            <div class="msg-bubble">수고했어요</div>
+            <div class="msg-meta">
+              <span class="time">오후 11:28</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. ㅇㅇ 낼봐 (오후 11:35) -->
+        <div class="msg-row incoming">
+          <div class="chat-avatar">
+            <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형">
+          </div>
+          <div class="msg-content-wrapper">
+            <span class="sender-name">도훈이 형</span>
+            <div class="bubble-row">
+              <div class="msg-bubble">ㅇㅇ 낼봐</div>
+              <div class="msg-meta">
+                <span class="time">오후 11:35</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. 네 쉬세요 (오후 11:36) -->
         <div class="msg-row outgoing">
           <div class="bubble-row">
             <div class="msg-bubble">네 쉬세요</div>
             <div class="msg-meta">
-              <span class="time">오후 11:43</span>
+              <span class="time">오후 11:36</span>
             </div>
           </div>
         </div>
 
         <!-- 오늘 날짜 구분선 (첫 메시지와 함께 등장) -->
-        <div class="date-divider today-divider" id="todayDivider">2026년 10월 19일 월요일</div>
+        <div class="date-divider today-divider" id="todayDivider">20XX년 XX월 XX일</div>
 
-        <!-- [동적 대화 1] 사용자 -->
+        <!-- [동적 대화 1] 사용자: 형 훈련 갈 수 있어요? -->
         <div class="msg-row outgoing dynamic" id="msg1">
           <div class="bubble-row">
             <div class="msg-bubble">형 훈련 갈 수 있어요?</div>
@@ -582,7 +662,7 @@
           </div>
         </div>
 
-        <!-- [동적 대화 2] 도훈이 형 -->
+        <!-- [동적 대화 2] 도훈이 형: 당연하지 -->
         <div class="msg-row incoming dynamic" id="msg2">
           <div class="chat-avatar">
             <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형">
@@ -598,7 +678,7 @@
           </div>
         </div>
 
-        <!-- [동적 대화 3] 도훈이 형 -->
+        <!-- [동적 대화 3] 도훈이 형: 너는? 갈 수 있어? -->
         <div class="msg-row incoming dynamic" id="msg3">
           <div class="chat-avatar">
             <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형">
@@ -614,7 +694,7 @@
           </div>
         </div>
 
-        <!-- [동적 대화 4] 사용자 -->
+        <!-- [동적 대화 4] 사용자: 당연하죠 다 나았어요 -->
         <div class="msg-row outgoing dynamic" id="msg4">
           <div class="bubble-row">
             <div class="msg-bubble">당연하죠 다 나았어요</div>
@@ -624,7 +704,7 @@
           </div>
         </div>
 
-        <!-- [동적 대화 5] 사용자 -->
+        <!-- [동적 대화 5] 사용자: 다음 주에 봐요 -->
         <div class="msg-row outgoing dynamic" id="msg5">
           <div class="bubble-row">
             <div class="msg-bubble">다음 주에 봐요</div>
@@ -635,7 +715,6 @@
         </div>
       </div>
 
-      <!-- 하단 입력창 -->
       <div class="chat-input-bar">
         <div class="input-box">메시지를 입력하세요...</div>
         <div class="send-icon">&#10148;</div>
@@ -648,8 +727,12 @@
       const splash = document.getElementById('splash');
       const targetChat = document.getElementById('targetChat');
       const chatView = document.getElementById('chatView');
+      const backBtn = document.getElementById('backBtn');
       const phoneContainer = document.getElementById('phoneContainer');
       const chatMessages = document.getElementById('chatMessages');
+
+      const dohoonPreview = document.getElementById('dohoonPreview');
+      const dohoonTime = document.getElementById('dohoonTime');
 
       const todayDivider = document.getElementById('todayDivider');
       const msg1 = document.getElementById('msg1');
@@ -661,50 +744,54 @@
 
       let scriptTriggered = false;
 
-      // 1. 카카오톡 스플래시 화면 1초 후 제거
+      // 스플래시 로딩 페이드아웃
       setTimeout(() => {
         splash.classList.add('fade-out');
-      }, 1000);
+      }, 900);
 
-      // 2. 도훈이 형 채팅방 클릭 시 입장
+      // 도훈이 형 채팅 클릭 (입장)
       targetChat.addEventListener('click', () => {
         chatView.classList.add('active');
         phoneContainer.classList.add('chat-view-active');
 
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
         if (scriptTriggered) return;
         scriptTriggered = true;
 
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        // 입장 후 0.7초: 오늘 날짜선 + 메시지 1 전송
+        // 0.7초 뒤: 오늘 구분선 + 메시지 1
         setTimeout(() => {
           todayDivider.classList.add('show');
           msg1.classList.add('show');
           chatMessages.scrollTop = chatMessages.scrollHeight;
 
-          // 0.8초 후: 읽음(1 사라짐)
+          // 0.8초 뒤: 1 사라짐
           setTimeout(() => {
             unread1.classList.add('hidden');
 
-            // 3초 후: "당연하지"
+            // 3초 뒤: "당연하지"
             setTimeout(() => {
               msg2.classList.add('show');
               chatMessages.scrollTop = chatMessages.scrollHeight;
 
-              // 1초 후: "너는? 갈 수 있어?"
+              // 1초 뒤: "너는? 갈 수 있어?"
               setTimeout(() => {
                 msg3.classList.add('show');
                 chatMessages.scrollTop = chatMessages.scrollHeight;
 
-                // 3초 후: "당연하죠 다 나았어요"
+                // 3초 뒤: "당연하죠 다 나았어요"
                 setTimeout(() => {
                   msg4.classList.add('show');
                   chatMessages.scrollTop = chatMessages.scrollHeight;
 
-                  // 2초 후: "다음 주에 봐요"
+                  // 2초 뒤: "다음 주에 봐요"
                   setTimeout(() => {
                     msg5.classList.add('show');
                     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                    // 대화 연출 완료 후 목록 미리보기 업데이트
+                    dohoonPreview.textContent = "다음 주에 봐요";
+                    dohoonTime.textContent = "오후 7:04";
                   }, 2000);
 
                 }, 3000);
@@ -716,6 +803,12 @@
           }, 800);
 
         }, 700);
+      });
+
+      // 뒤로가기 버튼 클릭 (채팅 목록으로 복귀)
+      backBtn.addEventListener('click', () => {
+        chatView.classList.remove('active');
+        phoneContainer.classList.remove('chat-view-active');
       });
     });
   </script>
