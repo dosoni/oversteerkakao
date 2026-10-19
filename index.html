@@ -170,12 +170,19 @@
       background-color: #f7f7f7;
     }
 
-    .avatar {
+    /* 프로필 래퍼 (압정 뱃지 위치용) */
+    .avatar-wrapper {
+      position: relative;
       width: 48px;
       height: 48px;
+      flex-shrink: 0;
+    }
+
+    .avatar {
+      width: 100%;
+      height: 100%;
       border-radius: 18px;
       background: #eee;
-      flex-shrink: 0;
       overflow: hidden;
       display: flex;
       align-items: center;
@@ -189,6 +196,30 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    /* 초록색 상단 고정 압정 뱃지 */
+    .pin-badge {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 18px;
+      height: 18px;
+      background-color: #2DB400; /* 네이버/카톡 계열 산뜻한 그린 */
+      border: 2px solid #FFFFFF;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    /* 깔끔한 미니 압정 SVG 아이콘 */
+    .pin-badge svg {
+      width: 9px;
+      height: 9px;
+      fill: #FFFFFF;
+      transform: rotate(45deg);
     }
 
     .item-content {
@@ -453,21 +484,32 @@
         <h1>채팅</h1>
       </div>
       <ul class="chat-items">
+        <!-- 도훈이 형: 초록 압정 고정 표시 + 초기 날짜 XX월 XX일 -->
         <li class="chat-item clickable" id="targetChat">
-          <div class="avatar">
-            <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형">
+          <div class="avatar-wrapper">
+            <div class="avatar">
+              <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형">
+            </div>
+            <div class="pin-badge" title="상단 고정">
+              <svg viewBox="0 0 24 24">
+                <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6l1 1 1-1v-6H18v-2l-2-2z"/>
+              </svg>
+            </div>
           </div>
           <div class="item-content">
             <div class="item-top">
               <span class="item-name">도훈이 형</span>
-              <span class="item-time" id="dohoonTime">어제</span>
+              <span class="item-time" id="dohoonTime">XX월 XX일</span>
             </div>
             <div class="item-preview" id="dohoonPreview">네 쉬세요</div>
           </div>
         </li>
 
+        <!-- 누나 -->
         <li class="chat-item">
-          <div class="avatar">누</div>
+          <div class="avatar-wrapper">
+            <div class="avatar">누</div>
+          </div>
           <div class="item-content">
             <div class="item-top">
               <span class="item-name">누나</span>
@@ -477,8 +519,11 @@
           </div>
         </li>
 
+        <!-- 엄마 -->
         <li class="chat-item">
-          <div class="avatar">엄</div>
+          <div class="avatar-wrapper">
+            <div class="avatar">엄</div>
+          </div>
           <div class="item-content">
             <div class="item-top">
               <span class="item-name">엄마</span>
@@ -488,34 +533,43 @@
           </div>
         </li>
 
+        <!-- 카카오톡 이모티콘: 날짜 XX월 XX일 -->
         <li class="chat-item">
-          <div class="avatar" style="background:#FFE600; color:#3C1E1E;">em</div>
+          <div class="avatar-wrapper">
+            <div class="avatar" style="background:#FFE600; color:#3C1E1E;">em</div>
+          </div>
           <div class="item-content">
             <div class="item-top">
               <span class="item-name">카카오톡 이모티콘</span>
-              <span class="item-time">10월 14일</span>
+              <span class="item-time">XX월 XX일</span>
             </div>
             <div class="item-preview">(광고)월요일은 이모티콘 무료로 받는 날! 맘껏 쓸 기회 놓치지 마세요....</div>
           </div>
         </li>
 
+        <!-- 롯데택배: 날짜 XX월 XX일 -->
         <li class="chat-item">
-          <div class="avatar" style="background:#ED1C24; color:#fff;">택배</div>
+          <div class="avatar-wrapper">
+            <div class="avatar" style="background:#ED1C24; color:#fff;">택배</div>
+          </div>
           <div class="item-content">
             <div class="item-top">
               <span class="item-name">롯데택배</span>
-              <span class="item-time">10월 13일</span>
+              <span class="item-time">XX월 XX일</span>
             </div>
             <div class="item-preview">딩동♬ 한지훈 고객님!...</div>
           </div>
         </li>
 
+        <!-- 29CM: 날짜 XX월 XX일 -->
         <li class="chat-item">
-          <div class="avatar" style="background:#000; color:#fff;">29</div>
+          <div class="avatar-wrapper">
+            <div class="avatar" style="background:#000; color:#fff;">29</div>
+          </div>
           <div class="item-content">
             <div class="item-top">
               <span class="item-name">29CM</span>
-              <span class="item-time">10월 10일</span>
+              <span class="item-time">XX월 XX일</span>
             </div>
             <div class="item-preview">(광고)오늘까지만 ~75+25%</div>
           </div>
@@ -648,10 +702,10 @@
           </div>
         </div>
 
-        <!-- 오늘 날짜 구분선 (첫 메시지와 함께 등장) -->
+        <!-- 오늘 날짜 구분선 (첫 동적 메시지와 함께 등장) -->
         <div class="date-divider today-divider" id="todayDivider">20XX년 XX월 XX일</div>
 
-        <!-- [동적 대화 1] 사용자: 형 훈련 갈 수 있어요? -->
+        <!-- [동적 대화 1] 사용자 -->
         <div class="msg-row outgoing dynamic" id="msg1">
           <div class="bubble-row">
             <div class="msg-bubble">형 훈련 갈 수 있어요?</div>
@@ -662,7 +716,7 @@
           </div>
         </div>
 
-        <!-- [동적 대화 2] 도훈이 형: 당연하지 -->
+        <!-- [동적 대화 2] 도훈이 형 -->
         <div class="msg-row incoming dynamic" id="msg2">
           <div class="chat-avatar">
             <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형">
@@ -678,7 +732,7 @@
           </div>
         </div>
 
-        <!-- [동적 대화 3] 도훈이 형: 너는? 갈 수 있어? -->
+        <!-- [동적 대화 3] 도훈이 형 -->
         <div class="msg-row incoming dynamic" id="msg3">
           <div class="chat-avatar">
             <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형">
@@ -694,7 +748,7 @@
           </div>
         </div>
 
-        <!-- [동적 대화 4] 사용자: 당연하죠 다 나았어요 -->
+        <!-- [동적 대화 4] 사용자 -->
         <div class="msg-row outgoing dynamic" id="msg4">
           <div class="bubble-row">
             <div class="msg-bubble">당연하죠 다 나았어요</div>
@@ -704,7 +758,7 @@
           </div>
         </div>
 
-        <!-- [동적 대화 5] 사용자: 다음 주에 봐요 -->
+        <!-- [동적 대화 5] 사용자 -->
         <div class="msg-row outgoing dynamic" id="msg5">
           <div class="bubble-row">
             <div class="msg-bubble">다음 주에 봐요</div>
