@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카카오톡 인터랙티브 연출 목업</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons for Kakao UI -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    /* 카카오톡 감성 폰트 & 스크롤바 제어 */
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 커스텀 스크롤바 숨기기 (모바일 앱 느낌) */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* 말풍선 디테일 꼬리 및 모양 */
+    .bubble-out {
+      border-top-right-radius: 3px !important;
+    }
+    .bubble-in {
+      border-top-left-radius: 3px !important;
+    }
+
+    /* 메시지 등장 부드러운 애니메이션 */
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .animate-pop-in {
+      animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* 카카오 로고 말풍선 */
+    .kakao-logo-bubble {
+      width: 68px;
+      height: 60px;
+      background-color: #381E1F;
+      border-radius: 28px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .kakao-logo-bubble::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 15px;
+      width: 0;
+      height: 0;
+      border-left: 9px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 13px solid #381E1F;
+      transform: rotate(20deg);
+    }
+  </style>
+</head>
+<body class="bg-neutral-900 min-h-screen flex items-center justify-center p-0 sm:p-4">
+
+  <!-- 스마트폰 하드웨어 목업 프레임 -->
+  <div class="relative w-full max-w-[390px] h-screen sm:h-[820px] bg-black sm:rounded-[48px] overflow-hidden shadow-2xl sm:border-[9px] border-[#252528] flex flex-col">
+    
+    <!-- 아이폰 노치 / 다이내믹 아일랜드 & 스피커 구멍 -->
+    <div class="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-50 hidden sm:flex items-center justify-center pointer-events-none">
+      <div class="w-2.5 h-2.5 bg-[#121214] rounded-full mr-2"></div>
+      <div class="w-2 h-2 bg-[#0c1024] rounded-full"></div>
+    </div>
+
+    <!-- 1. 스마트폰 상단 상태바 (Status Bar) -->
+    <header class="w-full h-11 px-6 flex justify-between items-center text-xs font-semibold select-none z-40 bg-transparent transition-colors duration-300" id="statusBar">
+      <span class="text-[14px] font-bold tracking-tight text-neutral-800" id="statusClock">18:38</span>
+      <div class="flex items-center space-x-1.5 text-neutral-800" id="statusIcons">
+        <i class="ph-bold ph-cellular-signal-full text-[15px]"></i>
+        <i class="ph-bold ph-wifi-high text-[15px]"></i>
+        <i class="ph-bold ph-battery-full text-[18px]"></i>
+      </div>
+    </header>
+
+    <!-- 메인 디스플레이 래퍼 -->
+    <main class="relative flex-1 w-full overflow-hidden bg-white flex flex-col">
+
+      <!-- ======================================================== -->
+      <!-- [뷰 1] 카카오톡 채팅 탭 (채팅 목록) -->
+      <!-- ======================================================== -->
+      <section id="chatListView" class="absolute inset-0 flex flex-col bg-white z-20 transition-transform duration-300">
+        <!-- 목록 상단 헤더 -->
+        <div class="h-13 px-5 py-3 flex items-center justify-between border-b border-neutral-100">
+          <div class="flex items-center space-x-2">
+            <h1 class="text-[21px] font-extrabold text-[#191919] tracking-tight">채팅</h1>
+            <i class="ph-bold ph-caret-down text-xs text-neutral-500 mt-1"></i>
+          </div>
+          <div class="flex items-center space-x-4 text-neutral-800 text-[20px]">
+            <button class="hover:text-neutral-500 transition-colors" aria-label="검색"><i class="ph ph-magnifying-glass"></i></button>
+            <button class="hover:text-neutral-500 transition-colors" aria-label="채팅 추가"><i class="ph ph-chat-circle-plus"></i></button>
+            <button class="hover:text-neutral-500 transition-colors" aria-label="음악"><i class="ph ph-music-notes"></i></button>
+            <button class="hover:text-neutral-500 transition-colors" aria-label="설정"><i class="ph ph-gear"></i></button>
+          </div>
+        </div>
+
+        <!-- 채팅방 리스트 영역 -->
+        <div class="flex-1 overflow-y-auto no-scrollbar divide-y divide-neutral-50">
+
+          <!-- 1) 도훈이 형 (유일하게 클릭 가능한 항목) -->
+          <div id="targetChatRoom" class="group relative flex items-center px-4 py-3.5 hover:bg-neutral-100 active:bg-neutral-200 transition-all cursor-pointer bg-amber-50/40">
+            <!-- 클릭 유도 펄스 배지 (은은하게 강조) -->
+            <span class="absolute right-3 top-2 flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+            </span>
+            <!-- 프로필 사진 -->
+            <div class="relative w-[50px] h-[50px] rounded-[19px] bg-neutral-200 shadow-inner mr-3.5 shrink-0 overflow-hidden">
+              <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형 프로필" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/e2e8f0/64748b?text=%EB%8F%84%ED%9B%88'">
+            </div>
+            <!-- 대화 내용 -->
+            <div class="flex-1 min-w-0 pr-2">
+              <div class="flex items-center justify-between mb-0.5">
+                <span class="font-bold text-[15px] text-neutral-900 truncate">도훈이 형</span>
+                <span class="text-[11px] text-neutral-400 font-normal">오후 6:21</span>
+              </div>
+              <p class="text-[13px] text-neutral-500 truncate">네 쉬세요</p>
+            </div>
+          </div>
+
+          <!-- 2) 누나 (비활성) -->
+          <div class="flex items-center px-4 py-3.5 opacity-90 select-none">
+            <div class="w-[50px] h-[50px] rounded-[19px] bg-rose-100 flex items-center justify-center text-rose-400 shadow-inner mr-3.5 shrink-0">
+              <i class="ph-duotone ph-smiley text-[26px]"></i>
+            </div>
+            <div class="flex-1 min-w-0 pr-2">
+              <div class="flex items-center justify-between mb-0.5">
+                <span class="font-semibold text-[15px] text-neutral-900 truncate">누나</span>
+                <span class="text-[11px] text-neutral-400 font-normal">오후 4:45</span>
+              </div>
+              <p class="text-[13px] text-neutral-500 truncate">나밖임</p>
+            </div>
+          </div>
+
+          <!-- 3) 엄마 (비활성) -->
+          <div class="flex items-center px-4 py-3.5 opacity-90 select-none">
+            <div class="w-[50px] h-[50px] rounded-[19px] bg-amber-100 flex items-center justify-center text-amber-500 shadow-inner mr-3.5 shrink-0">
+              <i class="ph-duotone ph-heart text-[26px]"></i>
+            </div>
+            <div class="flex-1 min-w-0 pr-2">
+              <div class="flex items-center justify-between mb-0.5">
+                <span class="font-semibold text-[15px] text-neutral-900 truncate">엄마</span>
+                <span class="text-[11px] text-neutral-400 font-normal">오후 2:10</span>
+              </div>
+              <p class="text-[13px] text-neutral-500 truncate">이따 봐요</p>
+            </div>
+          </div>
+
+          <!-- 4) 카카오톡 이모티콘 (비활성) -->
+          <div class="flex items-center px-4 py-3.5 opacity-90 select-none">
+            <div class="w-[50px] h-[50px] rounded-[19px] bg-[#FEE500] flex items-center justify-center text-[#381E1F] shadow-inner mr-3.5 shrink-0 font-black text-xs">
+              emoticon
+            </div>
+            <div class="flex-1 min-w-0 pr-2">
+              <div class="flex items-center justify-between mb-0.5">
+                <div class="flex items-center space-x-1">
+                  <span class="font-semibold text-[15px] text-neutral-900 truncate">카카오톡 이모티콘</span>
+                  <span class="px-1 py-0.2 bg-neutral-200 text-[10px] text-neutral-600 rounded">채널</span>
+                </div>
+                <span class="text-[11px] text-neutral-400 font-normal">오전 11:02</span>
+              </div>
+              <p class="text-[13px] text-neutral-500 truncate">(광고)월요일은 이모티콘 무료로 받는 날! 맘껏 쓸 기회 놓치지 마세요....</p>
+            </div>
+          </div>
+
+          <!-- 5) 롯데택배 (비활성) -->
+          <div class="flex items-center px-4 py-3.5 opacity-90 select-none">
+            <div class="w-[50px] h-[50px] rounded-[19px] bg-red-50 flex items-center justify-center text-red-500 shadow-inner mr-3.5 shrink-0">
+              <i class="ph-duotone ph-package text-[26px]"></i>
+            </div>
+            <div class="flex-1 min-w-0 pr-2">
+              <div class="flex items-center justify-between mb-0.5">
+                <div class="flex items-center space-x-1">
+                  <span class="font-semibold text-[15px] text-neutral-900 truncate">롯데택배</span>
+                  <span class="px-1 py-0.2 bg-neutral-200 text-[10px] text-neutral-600 rounded">알림톡</span>
+                </div>
+                <span class="text-[11px] text-neutral-400 font-normal">어제</span>
+              </div>
+              <p class="text-[13px] text-neutral-500 truncate">딩동♬ 한지훈 고객님!...</p>
+            </div>
+          </div>
+
+          <!-- 6) 29CM (비활성) -->
+          <div class="flex items-center px-4 py-3.5 opacity-90 select-none">
+            <div class="w-[50px] h-[50px] rounded-[19px] bg-black flex items-center justify-center text-white shadow-inner mr-3.5 shrink-0 font-black text-xs tracking-tighter">
+              29CM
+            </div>
+            <div class="flex-1 min-w-0 pr-2">
+              <div class="flex items-center justify-between mb-0.5">
+                <div class="flex items-center space-x-1">
+                  <span class="font-semibold text-[15px] text-neutral-900 truncate">29CM</span>
+                  <span class="px-1 py-0.2 bg-neutral-200 text-[10px] text-neutral-600 rounded">채널</span>
+                </div>
+                <span class="text-[11px] text-neutral-400 font-normal">어제</span>
+              </div>
+              <p class="text-[13px] text-neutral-500 truncate">(광고)오늘까지만 ~75+25%</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 하단 탭 내비게이션 바 -->
+        <nav class="h-14 bg-[#FAFAFA] border-t border-neutral-200/80 px-6 flex items-center justify-between text-neutral-400">
+          <div class="flex flex-col items-center cursor-default">
+            <i class="ph ph-user text-[22px]"></i>
+          </div>
+          <div class="flex flex-col items-center text-neutral-900 cursor-default relative">
+            <i class="ph-fill ph-chat-circle text-[22px]"></i>
+            <span class="absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-bold px-1 rounded-full leading-tight">6</span>
+          </div>
+          <div class="flex flex-col items-center cursor-default">
+            <i class="ph ph-eye text-[22px]"></i>
+          </div>
+          <div class="flex flex-col items-center cursor-default">
+            <i class="ph ph-shopping-bag-open text-[22px]"></i>
+          </div>
+          <div class="flex flex-col items-center cursor-default">
+            <i class="ph ph-dots-three text-[22px]"></i>
+          </div>
+        </nav>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- [뷰 2] 도훈이 형 채팅방 (우측 슬라이드 인) -->
+      <!-- ======================================================== -->
+      <section id="chatRoomView" class="absolute inset-0 flex flex-col bg-[#ABC1D1] z-30 translate-x-full transition-transform duration-300 ease-out">
+        <!-- 채팅방 상단 헤더 -->
+        <div class="h-12 px-3 flex items-center justify-between bg-[#ABC1D1] select-none shrink-0 border-b border-black/5">
+          <div class="flex items-center space-x-2">
+            <button id="backBtn" class="p-1 -ml-1 text-neutral-800 opacity-80 cursor-default" aria-label="뒤로가기 비활성화">
+              <i class="ph ph-caret-left text-[24px]"></i>
+            </button>
+            <span class="font-bold text-[16px] text-neutral-900">도훈이 형</span>
+          </div>
+          <div class="flex items-center space-x-3 text-neutral-800 text-[20px]">
+            <button aria-label="검색"><i class="ph ph-magnifying-glass"></i></button>
+            <button aria-label="서랍 메뉴"><i class="ph ph-list"></i></button>
+          </div>
+        </div>
+
+        <!-- 채팅 대화 스크롤 영역 -->
+        <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar scroll-smooth">
+          
+          <!-- 이전 대화 날짜 구분선 -->
+          <div class="flex justify-center my-2">
+            <span class="bg-black/15 text-white/95 text-[11px] font-medium px-3 py-1 rounded-full">
+              오늘
+            </span>
+          </div>
+
+          <!-- 동적 대화 생성 컨테이너 -->
+          <div id="dynamicMessages" class="space-y-3"></div>
+        </div>
+
+        <!-- 하단 입력 인풋바 (장식용) -->
+        <div class="h-12 bg-white px-3 flex items-center space-x-2 shrink-0 border-t border-neutral-200">
+          <button class="text-neutral-500 text-[20px]"><i class="ph ph-plus-circle"></i></button>
+          <div class="flex-1 bg-neutral-100 h-8 rounded-full px-3 flex items-center text-xs text-neutral-400">
+            메시지를 입력하세요
+          </div>
+          <button class="text-neutral-500 text-[20px]"><i class="ph ph-smiley"></i></button>
+          <button class="w-7 h-7 bg-[#FEE500] rounded-full flex items-center justify-center text-neutral-800 text-xs shadow-sm">
+            <i class="ph-bold ph-arrow-up"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- [스플래시] 카카오톡 최초 시작 화면 -->
+      <!-- ======================================================== -->
+      <div id="splashScreen" class="absolute inset-0 bg-[#FEE500] z-50 flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="kakao-logo-bubble shadow-md">
+          <span class="text-[#FEE500] font-black text-[17px] tracking-tight ml-0.5">TALK</span>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- 하단 홈 인디케이터 바 (iOS 스타일) -->
+    <div class="w-full h-5 bg-white sm:bg-black flex items-center justify-center shrink-0">
+      <div class="w-32 h-1 bg-neutral-300 sm:bg-neutral-600 rounded-full"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // 상태 및 DOM 참조
+    const splashScreen = document.getElementById('splashScreen');
+    const targetChatRoom = document.getElementById('targetChatRoom');
+    const chatRoomView = document.getElementById('chatRoomView');
+    const backBtn = document.getElementById('backBtn');
+    const dynamicMessages = document.getElementById('dynamicMessages');
+    const messagesContainer = document.getElementById('messagesContainer');
+    const statusClock = document.getElementById('statusClock');
+
+    let scriptTimers = [];
+
+    // 현재 스마트폰 시간 실시간 표시
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      statusClock.textContent = `${hours}:${minutes}`;
+    }
+    updateClock();
+    setInterval(updateClock, 10000);
+
+    // 자동 스크롤 함수
+    function scrollToBottom() {
+      setTimeout(() => {
+        messagesContainer.scrollTo({
+          top: messagesContainer.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 50);
+    }
+
+    // 1. 카카오톡 스플래시 화면 1초 후 페이드아웃
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        splashScreen.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          splashScreen.style.display = 'none';
+        }, 500);
+      }, 1000);
+    });
+
+    // 모든 예약된 타이머 취소 (뒤로가기 등 대비)
+    function clearScriptTimers() {
+      scriptTimers.forEach(id => clearTimeout(id));
+      scriptTimers = [];
+    }
+
+    // 보낸 메시지 HTML 템플릿 생성기
+    function appendOutgoingMessage(text, timeStr, hasUnread = false, id = '') {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex flex-col items-end space-y-1 animate-pop-in';
+      if (id) wrapper.id = id;
+
+      wrapper.innerHTML = `
+        <div class="flex items-end space-x-1.5 flex-row-reverse space-x-reverse">
+          <div class="bubble-out bg-[#FEE500] text-neutral-900 text-[13.5px] px-3.5 py-2 rounded-2xl shadow-sm max-w-[240px] leading-relaxed break-words font-normal">
+            ${text}
+          </div>
+          <div class="flex flex-col items-end mb-0.5 select-none">
+            ${hasUnread ? `<span class="unread-badge text-[10px] font-bold text-[#e5a800] leading-none mb-0.5">1</span>` : ''}
+            <span class="text-[10px] text-neutral-600 leading-none">${timeStr}</span>
+          </div>
+        </div>
+      `;
+      dynamicMessages.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    // 받은 메시지 HTML 템플릿 생성기
+    function appendIncomingMessage(text, timeStr) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex items-start space-x-2.5 animate-pop-in';
+
+      wrapper.innerHTML = `
+        <div class="w-[38px] h-[38px] rounded-[15px] bg-neutral-200 overflow-hidden shadow-inner shrink-0 mt-0.5">
+          <img src="KakaoTalk_20261019_184058723.jpg" alt="도훈이 형" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/e2e8f0/64748b?text=%EB%8F%84%ED%9B%88'">
+        </div>
+        <div class="flex flex-col space-y-1 max-w-[230px]">
+          <span class="text-[12px] text-neutral-700 font-medium ml-0.5">도훈이 형</span>
+          <div class="flex items-end space-x-1.5">
+            <div class="bubble-in bg-white text-neutral-900 text-[13.5px] px-3.5 py-2 rounded-2xl shadow-sm leading-relaxed break-words font-normal">
+              ${text}
+            </div>
+            <span class="text-[10px] text-neutral-600 mb-0.5 select-none shrink-0">${timeStr}</span>
+          </div>
+        </div>
+      `;
+      dynamicMessages.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    // 2. 도훈이 형 채팅방 대화 타임라인 시나리오 실행
+    function startChatTimeline() {
+      dynamicMessages.innerHTML = '';
+      clearScriptTimers();
+
+      const timeNow = "오후 6:38";
+
+      // [1] 약 0.7초 후: 사용자 "형 훈련 갈 수 있어요?" (노란색 1 포함 전송)
+      const t1 = setTimeout(() => {
+        appendOutgoingMessage("형 훈련 갈 수 있어요?", timeNow, true, "msg1");
+
+        // [2] 0.8초 후: 읽음 표시 1 사라짐
+        const t2 = setTimeout(() => {
+          const badge = document.querySelector('#msg1 .unread-badge');
+          if (badge) {
+            badge.style.transition = 'opacity 0.25s ease';
+            badge.style.opacity = '0';
+            setTimeout(() => badge.remove(), 250);
+          }
+
+          // [3] 3초 뒤: 도훈이 형 "당연하지"
+          const t3 = setTimeout(() => {
+            appendIncomingMessage("당연하지", timeNow);
+
+            // [4] 1초 뒤: 도훈이 형 "너는? 갈 수 있어?"
+            const t4 = setTimeout(() => {
+              appendIncomingMessage("너는? 갈 수 있어?", timeNow);
+
+              // [5] 3초 뒤: 사용자 "당연하죠 다 나았어요"
+              const t5 = setTimeout(() => {
+                appendOutgoingMessage("당연하죠 다 나았어요", timeNow, true, "msg2");
+                
+                // 자연스럽게 곧바로 1 사라짐
+                setTimeout(() => {
+                  const badge2 = document.querySelector('#msg2 .unread-badge');
+                  if (badge2) badge2.remove();
+                }, 700);
+
+                // [6] 2초 뒤: 사용자 "다음 주에 봐요"
+                const t6 = setTimeout(() => {
+                  appendOutgoingMessage("다음 주에 봐요", timeNow, false);
+                }, 2000);
+                scriptTimers.push(t6);
+
+              }, 3000);
+              scriptTimers.push(t5);
+
+            }, 1000);
+            scriptTimers.push(t4);
+
+          }, 3000);
+          scriptTimers.push(t3);
+
+        }, 800);
+        scriptTimers.push(t2);
+
+      }, 700);
+      scriptTimers.push(t1);
+    }
+
+    // '도훈이 형' 항목 클릭 시 채팅방 열기
+    targetChatRoom.addEventListener('click', () => {
+      chatRoomView.classList.remove('translate-x-full');
+      startChatTimeline();
+    });
+
+    // 뒤로가기 버튼은 작동하지 않도록 처리되었습니다.
+  </script>
+</body>
+</html>
